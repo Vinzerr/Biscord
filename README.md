@@ -20,6 +20,3 @@ Read more about what you can do with AutoBot.
 
 [Discord Server](https://discord.gg/4dZRKmR2Ud)
 
-### License
-
-
