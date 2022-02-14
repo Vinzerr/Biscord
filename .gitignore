@@ -1,7 +1,8 @@
 .config
 classes
 managers
-structure
+structures
 docs
 index.js
 README.md
+node_modules
