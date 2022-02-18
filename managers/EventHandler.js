@@ -15,20 +15,11 @@ class EventHandler extends Emitter {
 
     this.path = path
     this.settings = settings ? null : { }
-    this.client = Client
+    this.client = client
     this.ready = false
-
-    this.Events = new Collection()
-
-    this.init()
-
-  }
-
-  init(){
-
     this.utils = new UtilsManager()
+    this.events = new Collection()
 
-    if( ! this.client ) throw new ErrorHandler( Errors.noClient ) 
     if( ! this.path ) throw new ErrorHandler( 'The path for EventHandler to use is required by default.' )
     if( typeof this.path != 'string' ) throw new ErrorHandler( `The path should be a string not a ${ typeof this.path }` )
 
@@ -37,41 +28,41 @@ class EventHandler extends Emitter {
   }
 
   initialize(){
-    try{
+    var base = readdirSync( path.join( require.main.path , this.path ) )
+    var stat
+    var event 
+    var contents
 
-      var stat
-      var contents
-      var base = readdirSync( path.join( require.main.filename , '..' , this.path ) )
-
-      for ( let content of base ){
-        stat = lstatSync( path.join( require.main.filename, '..' , this.path , content ) )
-        if( stat.isFile()){
-          content = require( path.join( require.main.filename, '..' , this.path , content ) )
+    for ( let content of base ){
+      stat = lstatSync( path.join( require.main.path, this.path , content ) )
+      if( stat.isFile()){
+          content = require( path.join( require.main.path, this.path , content ) )
           content = this.utils.validateEvent( content )
           this.client.on( content.event , ( ...args ) => {
-            content.execute(...args)
+            console.log(content)
+            content.Execute(...args)
           })
-          this.Events.set( content.event , content )
+          this.events.set( content.event , content )
         } else {
-          contents = readdirSync( path.join( require.main.filename, '..' , this.path , content ) )
-          for ( let event of contents ){
-            event = require( path.join( require.main.filename , '..' , this.path , content , event ) )
-            event = this.utils.validateEvent( event )
-            this.client.on( event.event , ( ...args ) => {
-              event.execute(...args)
-            })
-            this.Events.set( event.event , event )
-          }
+          contents = readdirSync( path.join( require.main.path, this.path , content ) )
+        for ( let event of contents ){
+          event = require( path.join( require.main.path , this.path , content , event ) )
+          event = this.utils.validateEvent( event )
+          this.client.on( event.event , ( ...args ) => {
+            event.Execute(...args)
+          })
+          this.events.set( event.event , event )
         }
       }
-
-      this.ready = true
-      
-    } catch (error){
-      throw new ErrorHandler( error )
     }
   }
 
+  get( query ){
+    if( typeof query != 'string') throw new ErrorHandler( 'Query should be a string containing the name of the event.' )
+    event = this.events.find( element => element.event.toLowerCase() == query.toLowerCase() )
+    if( event ) return event
+    else return false
+  }
 }
 
 module.exports = EventHandler

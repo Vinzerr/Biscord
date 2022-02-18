@@ -1,53 +1,47 @@
 var CommandHandler = require('./managers/CommandHandler')
-var UtilsManager = require('./classes/UtilsManager')
 var EventHandler = require('./managers/EventHandler')
 var ErrorHandler = require('./classes/ErrorHandler')
 var Errors = require ('./structures/Errors')
 var Emitter = require('./classes/Emitter')
 var Discord = require('discord.js')
 
-var Package = require('./package.json')
-var { Intents } = require('discord.js')
+var { Intents }  = require('discord.js')
+
+var options = { intents : [ Intents.FLAGS.GUILDS , Intents.FLAGS.GUILD_MESSAGES ]}
 
 class Biscord extends Emitter {
-
-  constructor (){
+  constructor(){
     super()
-    this.options = { intents: [ Intents.FLAGS.GUILDS , Intents.FLAGS.GUILD_MESSAGES ] }
-    this.token = null
+
+    this.options = options
     this.client = new Discord.Client( this.options )
-    this.client.on( 'ready' , async () => { console.log(`               >>><< AutoBot >><<<\n\n[ Current Version ] ${ Package.version }\n[ Thank You! ] Thank you for using AutoBot as your framework! Your bot is now ready to be used ( online ).`) })
+
     global.client = this.client
+    
   }
 
-  destroy(){
-    this.token = null
-    this.client = null
-    this.options = null
+  configure( ClientOptions ){
+    if( ! ClientOptions ) return this.options = options
+    if( Object.keys(ClientOptions).length == 0 ) return this.options = options
+    this.client = new Discord.Client( ClientOptions )
+    this.options = ClientOptions
+    client = this.client
+    return this.client
   }
 
-  configure( options ){
-    if( options == undefined ) return
-    if( Object.keys(options).length == 0 ) return
-    if( typeof options != 'object' ) throw new ErrorHandler( Errors.invalidOptions )
-    try { 
-      this.client = new Discord.Client( options )
-      this.client.on( 'ready' , async () => { console.log(`               >>><< AutoBot >><<<\n\n[ Current Version ] ${ Package.version }\n[ Thank You! ] Thank you for using AutoBot as your framework! Your bot is now ready to be used ( online ).`) })
-      this.options = options
-    } catch (error){
-      throw new ErrorHandler( error ) 
+  initialize( token ){
+    try {
+      this.client.on( 'ready' , function (){ console.log(`               BISCORD beta.\nThank you for using Biscord as your framework, your Client is now online and can be used.`) })
+      this.client.login( token )
+    } catch (error) {
+      throw new ErrorHandler( error )
     }
     return this.client
   }
 
-  initialize ( token ){
-    this.token = token
-    if( this.token == undefined) throw new ErrorHandler( Errors.noToken )
-    if( typeof this.token != 'string' ) throw new ErrorHandler( Errors.invalidToken )
-    this.client.login( this.token )
-    
-    client = this.client
-    return this.client
+  destroy(){
+    this.client = null
+    this.options = null
   }
 
   get CommandHandler(){
@@ -57,12 +51,4 @@ class Biscord extends Emitter {
   get EventHandler(){
     return EventHandler
   }
-
 }
-
-var biscord = new Biscord()
-var Client = biscord.initialize( process.env.token )
-
-Client.on('ready', () => {
-  console.log('baboy')
-})
