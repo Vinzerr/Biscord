@@ -1,7 +1,7 @@
 node_modules
 commands
 events
-
+.gitignore
 .replit
 replit.nix
 package.json
