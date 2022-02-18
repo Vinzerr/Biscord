@@ -39,7 +39,7 @@ class EventHandler extends Emitter {
           content = require( path.join( require.main.path, this.path , content ) )
           content = this.utils.validateEvent( content )
           this.client.on( content.event , ( ...args ) => {
-            console.log(content)
+            console.log()
             content.Execute(...args)
           })
           this.events.set( content.event , content )

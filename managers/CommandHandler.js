@@ -106,7 +106,7 @@ class CommandHandler extends Emitter {
         try {
           ( async () => {
             await console.log(`[-] Registering Global Slash Commands`)
-            await REST.put( Routes.applicationCommands( options.clientId , { body: this.scomms } ) )
+            await REST.put( Routes.applicationCommands( options.clientId ? options.clientId : client.id , { body: this.scomms } ) )
             await console.log(`[-] Global Slash Commands registered`)
           })
         } catch (error){

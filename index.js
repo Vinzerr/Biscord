@@ -52,3 +52,8 @@ class Biscord extends Emitter {
     return EventHandler
   }
 }
+
+const biscord = new Biscord()
+const eventhandler = new EventHandler( './events' )
+
+biscord.initialize( process.env.token )

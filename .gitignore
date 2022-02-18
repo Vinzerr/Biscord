@@ -1,0 +1,8 @@
+node_modules
+commands
+events
+
+.replit
+replit.nix
+package.json
+package-lock.json
