@@ -1,7 +1,7 @@
 module.exports = {
 
   command: 'Unspecified',
-  description: 'Developer didn\'t speecify the description of this command.',
+  description: 'Developer didn\'t specify the description of this command.',
   arguments: [],
   blockedRoles: [],
   blockedUsers: [],
@@ -11,6 +11,8 @@ module.exports = {
   cooldown: '0s',
   guild: true,
   
-  execute: async function(){}
+  preExecute: async function(){},
+  Execute: async function(){},
+  postExecute: async function(){}
 
 }

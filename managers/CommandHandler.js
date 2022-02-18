@@ -11,34 +11,24 @@ const path = require('path')
 class CommandHandler extends Emitter {
 
   constructor ( path , settings ){
-
     super()
-
-    this.path = path
     this.settings = settings ? null : {}
-    this.client = Client
+    this.path = path
+    this.client = client
     this.ready = false
     this.utils = null
-
-    this.Commands = new Collection()
-    this.SlashCommands = new Collection()
-    this.Cooldowns = new Map()
-
-    this.init()
-
-  }
-
-  init(){
-
+    this.commands = new Collection()
+    this.slashcommands = new Collection()
+    this.cooldowns = new Map()
     this.utils = new UtilsManager()
+
     this.settings = this.utils.validateCommandHandlerSetttings( this.settings)
 
     if( ! this.client ) throw new ErrorHandler( Errors.noClient ) 
     if( ! this.path ) throw new ErrorHandler( 'The path for CommandHandler to use is required by default.' )
     if( typeof this.path != 'string' ) throw new ErrorHandler( `The path should be a string not a ${ typeof this.path }` )
-    
-    this.initialize()
 
+    this.initialize()
   }
 
   initialize(){
@@ -54,14 +44,14 @@ class CommandHandler extends Emitter {
           command = require( path.join( require.main.filename, '..' , this.path , content ) )
           command = this.utils.validateCommand( command )
           command.data ? slashcomms.push( command.command , command ) : null
-          this.Commands.set( command.command , command )
+          this.commands.set( command.command , command )
         } else {
           contents = readdirSync( path.join( require.main.filename, '..' , this.path , content ) )
           for ( const file of contents ){
             command = require( path.join( require.main.filename , '..' , this.path , content , file ) )
             command = this.utils.validateCommand( command )
             command.data ? slashcomms.push( command.data ) : null
-            this.Commands.set( command.command , command )
+            this.commands.set( command.command , command )
           }
         }
       }
@@ -70,15 +60,15 @@ class CommandHandler extends Emitter {
       throw new ErrorHandler( error )
     }
 
-    var Commands = this.Commands
-    var Cooldowns = this.Cooldowns
+    var commands = this.commands
+    var cooldowns = this.cooldowns
     var settings = this.settings
 
-    this.client.on( 'messageCreate' , function ( message ){
+    this.client.on( 'messageCreate' , async function ( message ){
       if( ! message.content.startsWith( settings.prefix )) return 
       var argums = message.content.slice(1).trim().split(/ +/)
       var name = argums.shift().toLowerCase()
-      var command = Commands.find( element => element.command.toLowerCase() == name || element.aliases && element.aliases.some( alias => alias.toLowerCase() == name ))
+      var command = commands.find( element => element.command.toLowerCase() == name || element.aliases && element.aliases.some( alias => alias.toLowerCase() == name ))
       if( ! command ) return
       if( message.author.bot ) return
       if( command.guild && command.guild.length != 0 && ! message.guild ) return
@@ -86,47 +76,43 @@ class CommandHandler extends Emitter {
       if( command.blockedUsers && command.blockedUsers.length != 0 && command.blockedUsers.some( user => user == message.author.id ) ) return 
       if( command.permisions && command.permisions.length != 0 && ! message.member.permissions.has(command.permissions)){
         if( command.users && command.users.length != 0 && ! command.users.some( user => user == message.author.id ) ){
-          if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ) { 
-            return
-          }
-        } else if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ) { 
-          return 
+          if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ) return
+          else if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ) return 
         }
       }
       if( command.users && command.users.length != 0 && ! command.users.some( user => user == message.author.id )){
-        if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ){
-          return
-        } else {
-          return
-        }
+        if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ) return
+        else return
       }
-      if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ){
-         return
-      }
+      if( command.roles && command.roles.length != 0 && ! command.roles.some( role => message.member.cache.some( r => r.id == role || r.name == role )) ) return
       if( command.cooldown ){
         var current = Date.now()
         var cooldown = ms( command.cooldown )
-        if( Cooldowns.has( `${message.author.id}.${command.command}` ) ){
-          var expiring = Cooldowns.get( `${message.author.id}.${command.command}` ) + cooldown
+        if( cooldowns.has( `${message.author.id}.${command.command}` ) ){
+          var expiring = cooldowns.get( `${message.author.id}.${command.command}` ) + cooldown
           if( current < expiring ){
             var remaining = expiring - current
             return message.channel.send(`Command Cooldown: ${ ms(remaining) }`)
           }
         } else {
-          Cooldowns.set( `${message.author.id}.${command.command}`, current )
-          setTimeout( () => Cooldowns.delete( `${message.author.id}.${command.command}` ), cooldown )
+          cooldowns.set( `${message.author.id}.${command.command}`, current )
+          setTimeout( () => cooldowns.delete( `${message.author.id}.${command.command}` ), cooldown )
         }
       }
-      
-      command.execute( message , argums )
+
+      console.log('test')
+
+      if( command.preExecute ) await command.preExecute( message , argums ) 
+      if( command.Execute ) await command.execute( message , argums )
+      if( command.postExecute ) await command.postExecute( message , argums )
 
     })
   }
 
-  static get( query ){
-    if( typeof Commands != 'object' ) throw new ErrorHandler( 'You need to execute new AutoBot.CommandHandler( params ) first to create a command handler!' )
+  get( query ){
+    var command
     if( typeof query != 'string') throw new ErrorHandler( 'Query should be a string containing the name or an alias of the command.' )
-    var command = Commands.find( element => element.command.toLowerCase() == query.toLowerCase() || element.aliases && element.aliases.some( alias => alias.toLowerCase() == query.toLowerCase() ))
+    command = commands.find( element => element.command.toLowerCase() == query.toLowerCase() || element.aliases && element.aliases.some( alias => alias.toLowerCase() == query.toLowerCase() ))
     if( command ) return command
     else return false
   }

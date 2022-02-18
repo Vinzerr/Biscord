@@ -1,64 +1,53 @@
 var CommandHandler = require('./managers/CommandHandler')
+var UtilsManager = require('./classes/UtilsManager')
 var EventHandler = require('./managers/EventHandler')
 var ErrorHandler = require('./classes/ErrorHandler')
 var Errors = require ('./structures/Errors')
 var Emitter = require('./classes/Emitter')
 var Discord = require('discord.js')
 
-var { Intents }  = require('discord.js')
+var Package = require('./package.json')
+var { Intents } = require('discord.js')
 
 class Biscord extends Emitter {
 
-  constructor ( token , clientid , clientsettings ){
+  constructor (){
     super()
-    this.clientsettings = clientsettings
-    this.token = token
-    this.clientid = clientid
-    this.ready = null
-    this.crashed = null
-    this.client = null
-  
-    this.init()
-  }
-
-  init(){
-
-    if( ! this.token ) throw new ErrorHandler( Errors.invalidToken )
-    if( ! this.clientid ) throw new ErrorHandler( Errors.invalidClientId )
-    if( ! this.clientsettings || this.clientsettings == { } ) this.clientsettings = { intents: [ Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES ]}
-
-    this.client = new Discord.Client( this.clientsettings )
-    this.client.on( 'ready' , function(){
-      console.log(`            >>><< AutoBot >><<<            \nThank you for using AutoBot as your framework! Your bot is now ready to be used ( online ).`)
-    })
-
-    global.Client = this.client
-
-  }
-
-  initialize(){
-    var token = this.token
-    var client = this.client
-    return new Promise ( async function ( resolve , reject ){
-      try {
-        client.login( token )
-        Client = client
-        resolve( client )
-      } catch ( error ){
-        throw new ErrorHandler( error )
-        reject( error )
-      }
-    })
+    this.options = { intents: [ Intents.FLAGS.GUILDS , Intents.FLAGS.GUILD_MESSAGES ] }
+    this.token = null
+    this.client = new Discord.Client( this.options )
+    this.client.on( 'ready' , async () => { console.log(`               >>><< AutoBot >><<<\n\n[ Current Version ] ${ Package.version }\n[ Thank You! ] Thank you for using AutoBot as your framework! Your bot is now ready to be used ( online ).`) })
+    global.client = this.client
   }
 
   destroy(){
     this.token = null
-    this.clientid = null
-    this.ready = null
-    this.crashed = null
     this.client = null
-    this.emit( 'destroy' )
-    return this
+    this.options = null
+  }
+
+  configure( options ){
+    if( options == undefined ) return
+    if( Object.keys(options).length == 0 ) return
+    if( typeof options != 'object' ) throw new ErrorHandler( Errors.invalidOptions )
+    try { 
+      this.client = new Discord.Client( options )
+      this.client.on( 'ready' , async () => { console.log(`               >>><< AutoBot >><<<\n\n[ Current Version ] ${ Package.version }\n[ Thank You! ] Thank you for using AutoBot as your framework! Your bot is now ready to be used ( online ).`) })
+      this.options = options
+    } catch (error){
+      throw new ErrorHandler( error ) 
+    }
+    return this.client
+  }
+
+  initialize ( token ){
+    this.token = token
+    if( this.token == undefined) throw new ErrorHandler( Errors.noToken )
+    if( typeof this.token != 'string' ) throw new ErrorHandler( Errors.invalidToken )
+    this.client.login( this.token )
+    
+    client = this.client
+    return this.client
   }
 
   get CommandHandler(){
@@ -70,3 +59,10 @@ class Biscord extends Emitter {
   }
 
 }
+
+var biscord = new Biscord()
+var Client = biscord.initialize( process.env.token )
+
+Client.on('ready', () => {
+  console.log('baboy')
+})
