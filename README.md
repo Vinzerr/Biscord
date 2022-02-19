@@ -56,9 +56,8 @@ For more functions visit our Documentation.
 # Important Links
 
 [![docs](https://img.shields.io/badge/docs-discord.js.org-blue.svg?longCache=true&style=for-the-badge)](discord.js.org) <br>
-[![guide](https://img.shields.io/badge/guide-discord.js.org/guide-green.svg?longCache=true&style=for-the-badge)](discord.js.org/guide)
-[Repository](https://github.com/Vinzerr/biscord)
-[Discord Community](https://discord.gg/PBjknh5vVC)
+[![guide](https://img.shields.io/badge/guide-discord.js.org/guide-green.svg?longCache=true&style=for-the-badge)](discord.js.org/guide) <br>
+[![repository](https://img.shields.io/badge/repositoy-github.com/Vinzerr/biscord-lightgray.svg?longCache=true&style=for-the-badge)](https://github.com/Vinzerr/biscord) <br>
 
 # Contribution & Supporters
 [![BuyMeACoffee](https://img.shields.io/badge/Buymeacoffee-%23FFDD00.svg?&style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoff.ee/vinzerr)
