@@ -1,4 +1,4 @@
-# Biscord 
+# Biscord beta.
 
 The most advance framework yet.
 
@@ -20,38 +20,9 @@ Install and update bicord via NPM.
 
 ### Basic Start Up
 
-```javascript
-  var biscord = require('biscord');
+__Comming soon, as Biscord is currently in development mode..__
 
-  var Biscord = new biscord();
-
-  /*
-
-    You can modify your ClientOptions by .configure function 
-    shown below, but this is an optional configuration.
-
-  */
-
-  Biscord.configure({
-    intents: [
-      // Client Intents
-    ]
-  })
-
-  var Client = Biscord.initialize( Token < string > );
-
-  /*
-
-    ( var Client ... ), it is optional to add an 
-    assignment on the initialization process.
-
-    And you're all set! Your bot will be online.
-
-  */
-
-```
-
-For more functions visit our Documentation.
+For documentation and guides of functions, classes and more, visit our documentation.
 
 ## Important Links
 
