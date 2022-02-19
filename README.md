@@ -2,7 +2,7 @@
 
 The most advance framework yet.
 
-[![created by](https://img.shields.io/badge/Created%20By-Vinzerr-blue.svg?longCache=true&style=flat-square)](https://github.com/Vinzerr) [![discord](https://img.shields.io/discord/944534636250406912?color=%235865F2&label=Discord&logo=discord&logoColor=white&style=flat-square)](https://discord.gg/PBjknh5vVC) [![npm downloads](https://img.shields.io/npm/dt/biscord?color=blue&style=flat-square)]
+[![created by](https://img.shields.io/badge/Created%20By-Vinzerr-blue.svg?longCache=true&style=flat)](https://github.com/Vinzerr) [![discord](https://img.shields.io/discord/944534636250406912?color=%235865F2&label=Discord&logo=discord&logoColor=white&style=flat)](https://discord.gg/PBjknh5vVC) ![npm downloads](https://img.shields.io/npm/dt/biscord?color=blue&style=flat)
 
 # Getting Started
 
@@ -55,13 +55,12 @@ For more functions visit our Documentation.
 
 # Important Links
 
-
-[Documentation](https://biscord.js.org)<br>
-[Guide](https://biscord.js.org/guide/)<br>
+[![docs](https://img.shields.io/badge/docs-discord.js.org-blue.svg?longCache=true&style=for-the-badge)](discord.js.org) <br>
+[![guide](https://img.shields.io/badge/guide-discord.js.org/guide-green.svg?longCache=true&style=for-the-badge)](discord.js.org/guide)
 [Repository](https://github.com/Vinzerr/biscord)
 [Discord Community](https://discord.gg/PBjknh5vVC)
 
 # Contribution & Supporters
-[![BuyMeaCoffee](https://img.shields.io/badge/Buymeacoffee-%23FFDD00.svg?&style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoff.ee/vinzerr)
+[![BuyMeACoffee](https://img.shields.io/badge/Buymeacoffee-%23FFDD00.svg?&style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoff.ee/vinzerr)
 
 Unable to buy me a book? Don't worry! You can instead nominate me for a __[GitHub Star](https://stars.github.com/nominate)__ instead ^-^.
