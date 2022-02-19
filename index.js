@@ -10,13 +10,22 @@ var { Intents }  = require('discord.js')
 var options = { intents : [ Intents.FLAGS.GUILDS , Intents.FLAGS.GUILD_MESSAGES ]}
 
 class Biscord extends Emitter {
-  constructor(){
+  constructor( configuration ){
     super()
 
+    console.log( `\u001b[33m[ Biscord ] Starting Module` )
+
     this.options = options
+    this.configuration = configuration
     this.client = new Discord.Client( this.options )
 
     global.client = this.client
+    global.ctoken = this.configuration.token
+    global.clientid =  this.configuration.clientId
+
+    if( ! this.configuration ) throw new ErrorHandler( Errors.missingConfig )
+    if( ! this.configuration.token ) throw new ErrorHandler( Errors.noToken )
+    if( ! this.configuration.clientId ) throw new ErrorHandler( Errors.invalidClientId )
     
   }
 
@@ -29,10 +38,12 @@ class Biscord extends Emitter {
     return this.client
   }
 
-  initialize( token ){
+  initialize(){
+    console.log( `\u001b[33m[ Biscord ] Starting Client` )
     try {
-      this.client.on( 'ready' , function (){ console.log(`               BISCORD beta.\nThank you for using Biscord as your framework, your Client is now online and can be used.`) })
-      this.client.login( token )
+      this.client.on( 'ready' , function (){ console.log(`\u001b[34m               BISCORD beta.\nThank you for using Biscord as your framework, your Client is now online and can be used.`) })
+      this.client.login( this.configuration.token )
+      console.log( `\u001b[32m[ Biscord ] Client Online` )
     } catch (error) {
       throw new ErrorHandler( error )
     }
@@ -53,7 +64,4 @@ class Biscord extends Emitter {
   }
 }
 
-const biscord = new Biscord()
-const eventhandler = new EventHandler( './events' )
-
-biscord.initialize( process.env.token )
+module.exports = Biscord

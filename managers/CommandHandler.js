@@ -14,6 +14,8 @@ class CommandHandler extends Emitter {
   constructor( path , CommandOptions ){
     super()
 
+    console.log( `\u001b[33m[ Biscord ] Starting CommandHandler` )
+
     this.utils = new UtilsManager()
     this.commands = new Collection()
     this.scommands = new Collection()
@@ -21,6 +23,8 @@ class CommandHandler extends Emitter {
 
     this.path = path
     this.scomms = []
+    this.slashcommands = false
+    this.rest = new REST({ version: 9 }).setToken( ctoken )
     this.settings = this.utils.validateCommandHandlerSetttings( CommandOptions ? CommandOptions : { } )
 
     this.initialize()
@@ -34,8 +38,10 @@ class CommandHandler extends Emitter {
     var contents
 
     var commands = this.commands
+    var scommands = this.scommands
     var settings = this.settings
     var cooldowns = this.cooldowns
+    var handler = this
 
     for( const content of base ){ 
       stat = lstatSync(path.join( require.main.path , this.path , content ))
@@ -43,17 +49,37 @@ class CommandHandler extends Emitter {
         command = require(path.join( require.main.path , this.path , content ))
         command = this.utils.validateCommand( command )
         this.commands.set( command.command , command )
-        if( command.data ) this.scomms.push( command.data )
+        if( Object.keys(command.data).length != 0 ){
+          this.scomms.push( command.data )
+          this.scommands.set( command.data.name , command )
+        }
       } else {
         contents = readdirSync(path.join( require.main.path , this.path , content ))
         for( const file of contents ){
           command = require(path.join( require.main.path , this.path , content , file ))
           command = this.utils.validateCommand( command )
           this.commands.set( command.command , command )
-          if( command.data ) this.scomms.push( command.data )
+          if( Object.keys(command.data).length != 0 ){
+            this.scomms.push( command.data )
+            this.scommands.set( command.data.name , command )
+          }
         }
       }
     }
+
+    client.on( 'interactionCreate' , async function( interaction ){
+      if( ! handler.slashcommands ) return
+      if( ! interaction.isCommand() ) return
+
+      var command = await scommands.get( interaction.commandName )
+
+      if( ! command ) return
+
+      await command.preSlashExecute( interaction )
+      await command.slashExecute( interaction )
+      await command.postSlashExecute( interaction )
+
+    })
 
     client.on( 'messageCreate' , async function( message ){
       if( ! message.content.startsWith( settings.prefix )) return
@@ -64,7 +90,7 @@ class CommandHandler extends Emitter {
       var command = commands.find( command => command.command.toLowerCase() == identifier || command.aliases && command.aliases.some( alias => alias.toLowerCase() == identifier ))
 
       if( ! command ) return
-      if( command.guild && command.guild.length != 0 && ! message.guild ) return
+      if( command.guilds.length != 0 && ! command.guilds.some( guild => guild == message.guild.id ) ) return
       if( command.blockedRoles && command.blockedRoles.length != 0 && command.blockedRoles.some( role => message.member.roles.cache.some( r => r.id == role || r.name == role ))) return
       if( command.blockedUsers && command.blockedUsers.length != 0 && command.blockedUsers.some( user => user == message.author.id ) ) return 
       if( command.permisions && command.permisions.length != 0 && ! message.member.permissions.has(command.permissions)){
@@ -97,39 +123,33 @@ class CommandHandler extends Emitter {
     })
   }
 
-  get SlashCommands(){
-    return class SlashCommands {
-
-      register( options ){
-        if( ! options.clientId ) throw new ErrorHandler( Errors.noClientId )
-        if( options.commands ) this.scomms = this.scomms.filter( command => command.data.name == command )
-        try {
-          ( async () => {
-            await console.log(`[-] Registering Global Slash Commands`)
-            await REST.put( Routes.applicationCommands( options.clientId ? options.clientId : client.id , { body: this.scomms } ) )
-            await console.log(`[-] Global Slash Commands registered`)
-          })
-        } catch (error){
-          throw new ErrorHandler( error )
-        }
+  registerSlash( options ){
+    if(    options?.commands ) this.scomms = this.scomms.filter( command => options.commands.some( slash => slash == command.data.name ) );
+    ( async () => {
+      try {
+        await console.log( `\u001b[33m[ Biscord ] Registering ( Global ) Slash Commands` )
+        await this.rest.put( Routes.applicationCommands( options?.clientId ? options?.clientId : clientid ), { body: this.scomms } )
+        await console.log( `\u001b[32m[ Biscord ] Registered ( Global )` )
+        this.slashcommands = true
+      } catch (error){
+        throw new ErrorHandler( error )
       }
+    }).call(this)
+  }
 
-      registerGuild( options ){
-        if( ! options.clientId ) throw new ErrorHandler( Errors.noClientId )
-        if( ! options.guildId ) throw new ErrorHandler( Errors.noGuildId )
-        if( options.commands ) this.scomms = this.scomms.filter( command => command.data.name == command )
-        try {
-          ( async () => {
-            await console.log(`[-] Registering Guild Slash Commands`)
-            await REST.put( Routes.applicationGuildCommands( options.clientId , options.guildId , { body: this.scomms } ) )
-            await console.log(`[-] Guild Slash Commands registered`)
-          })
-        } catch (error){
-          throw new ErrorHandler( error )
-        }
+  registerSlashGuild( options ){
+    if( ! options.guildId  ) throw new ErrorHandler( Errors.noGuildID )
+    if(   options.commands ) this.scomms = this.scomms.filter( command => options.commands.some( slash => slash == command.data.name ) );
+    ( async () => {
+      try {
+        await console.log( `\u001b[33m[ Biscord ] Registering ( Guild ) Slash Commands` )
+        await this.rest.put( Routes.applicationGuildCommands( options.clientId ? options.clientId : clientid , options.guildId ) , { body: this.scomms } )
+        await console.log( `\u001b[32m[ Biscord ] Registered ( Guild )` )
+        this.slashcommands = true
+      } catch (error){
+        throw new ErrorHandler( error )
       }
-
-    }
+    }).call(this)
   }
 
   get( query ){
@@ -138,6 +158,7 @@ class CommandHandler extends Emitter {
     if( command ) return command
     else return false
   }
+  
 }
 
 module.exports = CommandHandler

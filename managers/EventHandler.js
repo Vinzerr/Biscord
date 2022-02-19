@@ -10,8 +10,9 @@ const path = require('path')
 class EventHandler extends Emitter {
 
   constructor ( path , settings ){
-
     super()
+
+    console.log( `\u001b[33m[ Biscord ] Starting EventHandler` )
 
     this.path = path
     this.settings = settings ? null : { }
